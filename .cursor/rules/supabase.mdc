@@ -1,0 +1,44 @@
+---
+description: Supabase auth, database, and RLS conventions
+globs:
+  - "lib/supabase/**"
+  - "supabase/**"
+  - "app/**/*.ts"
+  - "app/**/*.tsx"
+---
+
+# Supabase Guidelines
+
+## Clients
+- Use `@supabase/ssr` package (NOT `@supabase/auth-helpers-nextjs` — deprecated)
+- Three factories live in `lib/supabase/`:
+  - `server.ts` — for Server Components, Server Actions, Route Handlers (reads cookies)
+  - `client.ts` — for Client Components (browser)
+  - `admin.ts` — service role, SERVER-ONLY, never expose
+
+## Auth
+- Email/password via `supabase.auth.signInWithPassword`
+- Proxy (`proxy.ts` at the project root — renamed from `middleware.ts` in Next 16) refreshes the session on every request via `lib/supabase/proxy.ts`
+- Layouts (not pages) enforce auth — redirect in `(member)/layout.tsx` and `admin/layout.tsx`
+- Check role in the layout via a DB query to `profiles` (use `lib/auth.ts` `getCurrentProfile()`); never trust JWT metadata for authZ
+- For role gates that should 403 (not redirect), call `forbidden()` from `next/navigation` — requires `experimental.authInterrupts: true` in `next.config.ts` (already enabled)
+
+## RLS — mandatory rules
+1. Every new table: `alter table X enable row level security;` in the same migration
+2. Write explicit policies for SELECT, INSERT, UPDATE, DELETE — no catch-all
+3. Always scope by `org_id` for multi-tenant tables
+4. Test policies: write a SQL test that tries to access another org's data as a member, expect empty result
+
+## Migrations
+- One migration file per logical change, named `YYYYMMDDHHMMSS_description.sql`
+- Always include both forward migration and the corresponding RLS policies
+- Never edit an already-applied migration — write a new one
+
+## Generated types
+- After any schema change: `npx supabase gen types typescript --local > types/database.ts`
+- Use `Database['public']['Tables']['menus']['Row']` style imports, not hand-written types
+
+## Common mistakes to avoid
+- Don't use `supabase.auth.getSession()` in server code — use `getUser()` (it revalidates)
+- Don't forget `await` on `cookies()` in Next.js 15+
+- Don't query with service role from user-facing code — bypasses RLS and is a critical security hole

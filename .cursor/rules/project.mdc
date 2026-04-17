@@ -1,0 +1,57 @@
+---
+description: Project-wide conventions for the catering app
+alwaysApply: true
+---
+
+# Project Conventions
+
+## Before writing code
+- Always read `docs/PRD.md` when starting a new feature
+- Propose a plan before making changes to more than 2 files — list what you'll touch and why
+- If a feature touches the database, write/update migrations in `supabase/migrations/` AND RLS policies in the same change
+
+## Stack
+- Next.js 14+ App Router, TypeScript strict mode, React Server Components by default
+- Client components (`'use client'`) only when needed (forms, interactivity, hooks)
+- Tailwind CSS + shadcn/ui for UI
+- Supabase for auth + DB, accessed via `@supabase/ssr` (NOT the old auth-helpers package)
+- Resend for email
+
+## File structure
+```
+app/                    # routes
+  (auth)/login/         # public
+  (member)/             # member pages, layout enforces auth
+  admin/                # admin pages, layout enforces admin role
+  api/                  # route handlers
+components/
+  ui/                   # shadcn primitives
+  member/               # member-specific
+  admin/                # admin-specific
+lib/
+  supabase/             # server + client factories
+  email/                # Resend wrappers
+  utils.ts
+types/
+  database.ts           # generated from Supabase
+supabase/
+  migrations/
+  seed.sql
+docs/
+  PRD.md
+```
+
+## Code style
+- Functional components only, no classes
+- Server Components for data fetching; pass data down as props
+- Client Components for interactivity — keep them leaf-level, small
+- No `any`. If a type is genuinely unknown, use `unknown` and narrow
+- Name boolean props affirmatively (`isOpen`, not `hidden`)
+- Error handling: every `async` in a server action or route handler wrapped in try/catch with typed error return
+
+## Never do
+- Never disable RLS "just to test"
+- Never commit secrets; use `.env.local` and add everything to `.env.example`
+- Never use `localStorage` for auth state — Supabase SSR handles cookies
+- Never call Supabase admin client (service role) from the browser
+- Never trust `role` from the client; always re-check server-side

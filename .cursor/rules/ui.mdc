@@ -1,0 +1,42 @@
+---
+description: UI, styling, and mobile-first conventions
+globs:
+  - "app/**/*.tsx"
+  - "components/**/*.tsx"
+---
+
+# UI Guidelines
+
+## Mobile-first
+- Design at 375px width first, then scale up
+- Tap targets min 44×44px
+- Bottom-sheet patterns preferred over modals on mobile
+- Avoid hover-only interactions — must work on touch
+
+## Tailwind
+- Use semantic tokens from shadcn theme (`bg-background`, `text-foreground`, `border-border`)
+- NEVER hardcode colors like `bg-[#ff0000]` — extend theme if needed
+- Spacing: stick to the 4px scale (`p-2`, `p-4`, `p-6`, `p-8`)
+
+## Components
+- Compose from shadcn/ui primitives in `components/ui/`
+- Loading states: use `<Skeleton />` for data, `<Spinner />` for actions
+- Empty states: always have an illustration or icon + helpful text + primary action
+- Error states: user-friendly message + retry button; never show raw error strings
+
+## Forms
+- Use `react-hook-form` + `zod` for validation
+- Validate on blur, submit on explicit action
+- Show inline errors below fields, not as toasts
+- Disable submit button while submitting; show spinner in button
+
+## Accessibility
+- Every interactive element has an accessible name
+- Use semantic HTML — `<button>` for actions, `<a>` for navigation
+- Focus states must be visible (don't remove outlines)
+- Color is never the only indicator (add icons or text)
+
+## Date/time display
+- Always use the org timezone from context, never `new Date().toLocaleString()` without TZ
+- Use `date-fns` + `date-fns-tz` for formatting and parsing
+- Show relative times for recent events ("2 min ago"), absolute for future ("Tomorrow 10:00 AM")

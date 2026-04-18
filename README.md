@@ -113,3 +113,4 @@ Project-wide rules live in `.cursor/rules/`. The big ones:
 - Auth via `@supabase/ssr` (cookies are async in Next 16)
 - Session refresh in `proxy.ts` (renamed from `middleware.ts` in Next 16)
 - No hardcoded colors — use the shadcn theme tokens in `app/globals.css`
+...\
